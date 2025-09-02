@@ -1,0 +1,41 @@
+# Node dependencies
+node_modules/
+.pnpm-store/
+.npm/
+
+# Build outputs / caches
+dist/
+build/
+.vite/
+.cache/
+coverage/
+.parcel-cache/
+.turbo/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+VITE_OPENROUTER_API_KEY
+*.local
+*.secret
+*.pem
+*.key
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS-specific
+.DS_Store
+Thumbs.db
+

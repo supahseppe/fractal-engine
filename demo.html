@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snowflake Method Writing Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar-link.active {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: 600;
+        }
+        .sidebar-link:not(.active):hover {
+            background-color: #374151;
+        }
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* New styles for interactive suggestions */
+        .suggestion-card {
+            position: relative;
+            background-color: #374151;
+            border: 1px solid #4b5563;
+            border-radius: 0.75rem;
+            padding: 1rem 1rem 1rem 3rem; /* Space for checkbox */
+            margin-bottom: 1rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .suggestion-card:hover {
+            background-color: #4b5563;
+        }
+        .suggestion-card.selected {
+            border-color: #6366f1;
+            background-color: #4338ca;
+        }
+        .suggestion-checkbox {
+            position: absolute;
+            left: 1rem;
+            top: 1.25rem;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        .suggestion-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .action-toolbar {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .suggestion-card:hover .action-toolbar {
+            opacity: 1;
+        }
+        .action-icon {
+            background-color: #4b5563;
+            border-radius: 50%;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .action-icon:hover {
+            background-color: #6366f1;
+        }
+        .action-icon svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <nav class="w-64 bg-gray-800 p-4 flex flex-col fixed h-full">
+            <h1 class="text-xl font-bold text-white mb-6">Snowflake Method</h1>
+            <ul class="space-y-2">
+                <li><a href="#" id="step-link-1" class="sidebar-link block py-2 px-3 rounded-lg" data-step="1">1. One-Sentence Summary</a></li>
+                <li><a href="#" id="step-link-2" class="sidebar-link block py-2 px-3 rounded-lg" data-step="2">2. One-Paragraph Summary</a></li>
+                <!-- ... other steps ... -->
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8 overflow-y-auto no-scrollbar">
+            <div id="save-notification" class="fixed top-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-300">
+                Progress saved!
+            </div>
+            
+            <!-- Step 1 Content -->
+            <div id="step-content-1" class="step-content">
+                <h2 class="text-3xl font-bold text-white mb-2">Step 1: One-Sentence Summary</h2>
+                <p class="text-gray-400 mb-6">Write a single sentence that captures the core of your story, or type a rough idea below and use "Generate Suggestions" to get started.</p>
+                <textarea id="step-input-1" class="w-full h-32 bg-gray-800 border border-gray-700 rounded-lg p-4 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Enter your one-sentence summary or a general story idea..."></textarea>
+            </div>
+
+             <!-- Step 2 Content -->
+            <div id="step-content-2" class="step-content hidden">
+                <h2 class="text-3xl font-bold text-white mb-2">Step 2: One-Paragraph Summary</h2>
+                <p class="text-gray-400 mb-6">Expand your sentence into a full paragraph. Describe the story setup, major disasters, and the ending. This paragraph should mirror the classic three-act structure.</p>
+                <textarea id="step-input-2" class="w-full h-64 bg-gray-800 border border-gray-700 rounded-lg p-4 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+            </div>
+            
+            <!-- ... other placeholders ... -->
+
+            <!-- Action Buttons -->
+            <div class="mt-6 flex flex-wrap gap-4">
+                <button id="save-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Save Progress</button>
+                <button id="generate-button" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Generate Suggestions</button>
+                <button id="brainstorm-button" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Brainstorm (Advice)</button>
+                <button id="refine-button" class="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Refine My Text</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- AI Modal -->
+    <div id="ai-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden">
+        <div class="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                <h3 id="modal-title" class="text-2xl font-bold text-white">AI Writing Assistant</h3>
+                <button id="close-modal-button" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="modal-content-wrapper" class="p-6 overflow-y-auto no-scrollbar">
+                <div id="modal-content"></div>
+            </div>
+            <div id="modal-loading" class="p-6 text-center text-gray-400 hidden">
+                <p>Thinking...</p>
+            </div>
+            <div id="modal-footer" class="p-4 bg-gray-800 border-t border-gray-700 mt-auto hidden">
+                <button id="synthesize-button" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors" disabled>Synthesize Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const appState = {
+                currentStep: 1,
+                steps: { '1': '', '2': '' }
+            };
+
+            const stepLinks = document.querySelectorAll('.sidebar-link');
+            const stepContents = document.querySelectorAll('.step-content');
+            const saveButton = document.getElementById('save-button');
+            const generateButton = document.getElementById('generate-button');
+            const brainstormButton = document.getElementById('brainstorm-button');
+            const refineButton = document.getElementById('refine-button');
+            const saveNotification = document.getElementById('save-notification');
+            
+            const aiModal = document.getElementById('ai-modal');
+            const closeModalButton = document.getElementById('close-modal-button');
+            const modalContent = document.getElementById('modal-content');
+            const modalLoading = document.getElementById('modal-loading');
+            const modalFooter = document.getElementById('modal-footer');
+            const synthesizeButton = document.getElementById('synthesize-button');
+            const modalTitle = document.getElementById('modal-title');
+
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
+
+            // --- Data Persistence ---
+            function loadData() {
+                const savedData = localStorage.getItem('snowflakeProject');
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    Object.assign(appState, parsedData);
+                    Object.keys(appState.steps).forEach(step => {
+                        const input = document.getElementById(`step-input-${step}`);
+                        if (input && appState.steps[step]) input.value = appState.steps[step];
+                    });
+                }
+                showStep(appState.currentStep);
+            }
+
+            function saveData() {
+                const currentInput = document.getElementById(`step-input-${appState.currentStep}`);
+                if (currentInput) appState.steps[appState.currentStep] = currentInput.value;
+                appState.lastUpdated = new Date().toISOString();
+                localStorage.setItem('snowflakeProject', JSON.stringify(appState));
+                saveNotification.classList.remove('opacity-0');
+                setTimeout(() => saveNotification.classList.add('opacity-0'), 2000);
+            }
+
+            // --- UI Navigation ---
+            function showStep(stepNumber) {
+                appState.currentStep = parseInt(stepNumber);
+                stepLinks.forEach(link => link.classList.toggle('active', link.dataset.step == stepNumber));
+                stepContents.forEach(content => content.classList.toggle('hidden', content.id !== `step-content-${stepNumber}`));
+            }
+
+            // --- Modal Control ---
+            function openModal() { aiModal.classList.remove('hidden'); }
+            function closeModal() { aiModal.classList.add('hidden'); }
+
+            // --- Interactive Suggestion Handlers ---
+            function handleApply(summary) {
+                document.getElementById(`step-input-${appState.currentStep}`).value = summary;
+                saveData();
+                closeModal();
+            }
+
+            function handleCopy(summary) {
+                navigator.clipboard.writeText(summary).catch(err => console.error('Failed to copy:', err));
+            }
+
+            function handleIterate(summary) {
+                const userQuery = `Act as a development editor brainstorming alternate story paths. The user has chosen a core concept to explore:
+
+**Core Concept:**
+"${summary}"
+
+---
+
+Your task is to generate 3 new one-sentence summaries that are **structurally different variations** of the Core Concept. For each new summary, you **must** change at least TWO of the following: the protagonist's primary goal, the nature of the antagonist, the setting, or the story's stakes. Retain the original's spirit.
+
+For each, provide a creative "angle". Return the response as a JSON object.`;
+                callGeminiAPI('generate', userQuery); 
+            }
+            
+            function handleSynthesize() {
+                 const selectedSummaries = Array.from(document.querySelectorAll('.suggestion-checkbox:checked'))
+                    .map(cb => cb.dataset.summary);
+                
+                if (selectedSummaries.length < 2) return;
+
+                const ideasText = selectedSummaries.map((s, i) => `**Idea ${String.fromCharCode(65 + i)}:** "${s}"`).join('\n');
+
+                const userQuery = `Act as a story-blending alchemist. The user wants to fuse the core DNA of the following ideas:
+
+${ideasText}
+
+---
+
+First, internally identify the single most powerful story element (a character, a conflict, a setting, a magic system) from each idea.
+
+Then, combine these powerful elements to forge 3 new, unexpected, and cohesive one-sentence summaries. The goal is not to mash them together, but to create a novel concept that feels like a natural evolution of both.
+
+For each, provide a creative "angle". Return the response as a JSON object.`;
+                callGeminiAPI('generate', userQuery);
+            }
+
+            // --- AI Integration ---
+            function getSystemPrompt() {
+                return "You are an expert novelist and creative writing assistant. You are guiding a user through the Snowflake Method. Your tone is encouraging and insightful. When asked to generate ideas, be creative and provide distinct options.";
+            }
+
+            function renderSuggestions(suggestions) {
+                modalContent.innerHTML = '';
+                modalTitle.textContent = 'Generated Suggestions';
+                modalFooter.classList.remove('hidden');
+
+                const colors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-pink-500', 'bg-purple-500'];
+                
+                suggestions.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'suggestion-card';
+                    card.innerHTML = `
+                        <input type="checkbox" class="suggestion-checkbox" data-summary="${item.summary.replace(/"/g, '&quot;')}">
+                        <div>
+                            <span class="suggestion-tag ${colors[index % colors.length]}">${item.angle}</span>
+                            <p class="text-gray-300">${item.summary}</p>
+                        </div>
+                        <div class="action-toolbar">
+                            <div class="action-icon apply-btn" title="Apply Summary"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
+                            <div class="action-icon iterate-btn" title="Iterate on this Idea"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
+                            <div class="action-icon copy-btn" title="Copy Text"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>
+                        </div>
+                    `;
+                    modalContent.appendChild(card);
+                    card.querySelector('.apply-btn').addEventListener('click', () => handleApply(item.summary));
+                    card.querySelector('.copy-btn').addEventListener('click', () => handleCopy(item.summary));
+                    card.querySelector('.iterate-btn').addEventListener('click', () => handleIterate(item.summary));
+                });
+
+                document.querySelectorAll('.suggestion-checkbox').forEach(cb => {
+                    cb.addEventListener('change', () => {
+                        cb.closest('.suggestion-card').classList.toggle('selected', cb.checked);
+                        const selectedCount = document.querySelectorAll('.suggestion-checkbox:checked').length;
+                        synthesizeButton.disabled = selectedCount < 2;
+                        synthesizeButton.textContent = `Synthesize ${selectedCount} Selected`;
+                    });
+                });
+            }
+
+            function renderMarkdownResponse(text) {
+                modalContent.innerHTML = marked.parse(text);
+                modalTitle.textContent = 'AI Writing Assistant';
+                modalFooter.classList.add('hidden');
+            }
+            
+            async function callGeminiAPI(task, overrideQuery = null) {
+                openModal();
+                modalContent.innerHTML = '';
+                modalLoading.classList.remove('hidden');
+                
+                const currentStepContent = document.getElementById(`step-input-${appState.currentStep}`)?.value || '';
+                if ((task === 'generate' || task === 'refine') && currentStepContent.trim() === '' && !overrideQuery) {
+                    renderMarkdownResponse('Please enter some text in the text area first.');
+                    modalLoading.classList.add('hidden');
+                    return;
+                }
+
+                let userQuery = overrideQuery;
+                let wantsJson = (task === 'generate' || !!overrideQuery);
+
+                if (!userQuery) {
+                    const context = `Here is the current story context from previous steps:\n\n**Step 1:** ${appState.steps['1'] || 'Not started.'}`;
+                    const currentStepTitle = document.querySelector(`#step-link-${appState.currentStep}`).textContent;
+
+                    switch(task) {
+                        case 'generate':
+                            userQuery = `Act as a master storyteller and genre expert. The user has provided the following raw story premise: "${currentStepContent}". Your task is to transform this premise into 4 distinct, compelling one-sentence summaries that could launch a novel.
+
+For each summary, you **must**:
+1.  Explore a **radically different creative direction** (e.g., change the genre, the protagonist's core motivation, or the central conflict).
+2.  Provide a specific and evocative **"angle"** that captures the unique sub-genre and tone (e.g., 'Hopepunk Adventure', 'Gothic Steampunk', 'Cosmic Horror Mystery'). Avoid generic labels.
+
+Return the response as a JSON object.`;
+                            break;
+                        case 'brainstorm':
+                            userQuery = `${context}\n\nThe user is on **${currentStepTitle}**. Help them brainstorm by providing general advice, creative prompts, and guidelines.`;
+                            break;
+                        case 'refine':
+                            userQuery = `${context}\n\nThe user wrote: "${currentStepContent}". Help them refine and improve it.`;
+                            break;
+                    }
+                }
+                
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: { parts: [{ text: getSystemPrompt() }] },
+                };
+
+                if (wantsJson) {
+                    payload.generationConfig = {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: { "summary": { "type": "STRING" }, "angle": { "type": "STRING" } },
+                                required: ["summary", "angle"]
+                            }
+                        }
+                    };
+                }
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+                    
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (!text) throw new Error("Received an empty response from the AI.");
+
+                    if (wantsJson) {
+                        try {
+                            const jsonData = JSON.parse(text);
+                            renderSuggestions(jsonData);
+                        } catch (e) {
+                            console.error("Failed to parse JSON:", text);
+                            renderMarkdownResponse("Sorry, I received an unexpected format. Here is the raw response:\n\n```\n" + text + "\n```");
+                        }
+                    } else {
+                        renderMarkdownResponse(text);
+                    }
+                } catch (error) {
+                    console.error('Error calling Gemini API:', error);
+                    renderMarkdownResponse(`<p class="text-red-400">An error occurred: ${error.message}</p>`);
+                } finally {
+                    modalLoading.classList.add('hidden');
+                }
+            }
+
+            // --- Event Listeners ---
+            stepLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    saveData(); 
+                    showStep(e.target.dataset.step);
+                });
+            });
+
+            saveButton.addEventListener('click', saveData);
+            generateButton.addEventListener('click', () => callGeminiAPI('generate'));
+            brainstormButton.addEventListener('click', () => callGeminiAPI('brainstorm'));
+            refineButton.addEventListener('click', () => callGeminiAPI('refine'));
+            closeModalButton.addEventListener('click', closeModal);
+            aiModal.addEventListener('click', (e) => {
+                if (e.target === aiModal) closeModal();
+            });
+            synthesizeButton.addEventListener('click', handleSynthesize);
+            
+            // Initial load
+            loadData();
+        });
+    </script>
+</body>
+</html>
+

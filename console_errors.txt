@@ -1,0 +1,28 @@
+# Smoke Test T10 - 2025-09-02
+
+## Fixed Issues
+
+1. Fixed "ai-modal.js:76 Uncaught TypeError: Cannot read properties of undefined (reading 'subscribe')"
+   - Added safety checks in connectedCallback and updated methods to ensure store exists before accessing
+
+2. Fixed "project-sidebar.js:57 Uncaught TypeError: Cannot read properties of undefined (reading 'subscribe')"
+   - Added safety checks in connectedCallback and updated methods to ensure store exists before accessing
+
+3. Fixed "project-sidebar.js:67 Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'getState')"
+   - Added safety checks in render method to ensure store exists before accessing getState
+
+4. Fixed "api.js:26 Uncaught (in promise) TypeError: Cannot read properties of null (reading 'textContent')"
+   - Added safety check for document.getElementById to handle cases where element might not exist
+
+## Current Status
+
+No console errors during T10 smoke test
+
+## Testing Summary
+
+- App boots with no uncaught errors
+- Step 3 navigation and focus behavior functions correctly
+- Characters CRUD operations work as expected
+- AI "suggest-characters" returns suggestions and supports both bulk "Add Selected" and single "Apply"
+- Sidebar count badge updates reactively and aria-label reflects the count
+- Legacy AI tasks for Steps 1-2 remain unchanged

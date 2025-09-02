@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snowflake Method Writing Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style></style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <div class="grid h-screen" style="grid-template-columns: 16rem 1fr;">
+        <project-sidebar></project-sidebar>
+
+        <!-- Main Content -->
+        <main class="p-8 overflow-y-auto no-scrollbar">
+            <div id="save-notification" class="fixed top-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-300">
+                Progress saved!
+            </div>
+            
+            <!-- Step 1 Content -->
+            <div id="step-content-1" class="step-content">
+                <h2 class="text-3xl font-bold text-white mb-2">Step 1: One-Sentence Summary</h2>
+                <p class="text-gray-400 mb-6">Write a single sentence that captures the core of your story, or type a rough idea below and use "Generate Suggestions" to get started.</p>
+                <textarea id="step-input-1" class="w-full h-32 bg-gray-800 border border-gray-700 rounded-lg p-4 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Enter your one-sentence summary or a general story idea..."></textarea>
+            </div>
+
+            <!-- Step 2 Content -->
+            <div id="step-content-2" class="step-content hidden">
+                <h2 class="text-3xl font-bold text-white mb-2">Step 2: One-Paragraph Summary</h2>
+                <p class="text-gray-400 mb-6">Expand your sentence into a full paragraph. Describe the story setup, major disasters, and the ending. This paragraph should mirror the classic three-act structure.</p>
+                <textarea id="step-input-2" class="w-full h-64 bg-gray-800 border border-gray-700 rounded-lg p-4 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                <div class="mt-4">
+                    <button id="suggest-characters-button" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Suggest Characters</button>
+                </div>
+            </div>
+
+            <!-- Step 3 Content -->
+            <section id="step-3" style="display:none;">
+                <h2 id="step-3-heading" tabindex="-1" class="text-3xl font-bold text-white mb-2">Characters</h2>
+                <character-view id="character-view"></character-view>
+            </section>
+            
+            <!-- ... other placeholders ... -->
+
+            <!-- Action Buttons -->
+            <div class="mt-6 flex flex-wrap gap-4">
+                <button id="save-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Save Progress</button>
+                <button id="generate-button" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Generate Suggestions</button>
+                <button id="brainstorm-button" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Brainstorm (Advice)</button>
+                <button id="refine-button" class="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Refine My Text</button>
+                <button id="quick-save-button" class="bg-amber-700 hover:bg-amber-800 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Quick Save State</button>
+                <button id="quick-load-button" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Quick Load State</button>
+            </div>
+        </main>
+    </div>
+
+    <ai-modal></ai-modal>
+    <!-- Global overlay (used only when modal is not open) -->
+    <div id="app-overlay" class="fixed inset-0 z-50 bg-black/60 hidden">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+            <div class="bg-gray-800 text-gray-100 px-5 py-3 rounded-lg shadow-lg" style="display:inline-flex;align-items:center;gap:0.5rem;">
+                <span class="loader border-2 border-white/30 border-t-white rounded-full w-5 h-5 inline-block animate-spin"></span>
+                <span id="app-overlay-text">Loading...</span>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
